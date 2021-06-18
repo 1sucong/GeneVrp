@@ -1,9 +1,12 @@
+## 环境设定
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from deap import base, tools, creator, algorithms
 import random
 from copy import deepcopy
 
+
+# 设置绘图相关信息
 params = {
             'font.family': 'serif',
             'figure.dpi': 300,
@@ -11,7 +14,7 @@ params = {
             'font.size': 12,
             'legend.fontsize': 'small'
         }
-plt.rcParams.update(params)
+# plt.rcParams.update(params)
 
 
 class DeapVrp:
@@ -41,6 +44,7 @@ class DeapVrp:
             while (vehicleLoad < dataDict['MaxLoad']) and (pointer < nCustomer -1):
                 vehicleLoad += dataDict['Demand'][perm[pointer]]
                 pointer += 1
+            # 做随机打断，在车辆负载范围内，随机选择装载范围内的断点
             if lowPointer+1 < pointer:
                 tempPointer = np.random.randint(lowPointer+1, pointer)
                 permSlice.append(perm[lowPointer:tempPointer].tolist())
@@ -73,7 +77,14 @@ class DeapVrp:
         输出： 欧几里得距离'''
         return np.sqrt((pos1[0] - pos2[0])*(pos1[0] - pos2[0]) + (pos1[1] - pos2[1])*(pos1[1] - pos2[1]))
 
-    #
+
+
+
+    # ------------------此处待完善｜-----------------------
+
+
+
+    #目前对loadpenalty只做简单加和 实际是负载超标的部分直接跟距离做加和
     def loadPenalty(self,routes):
         '''辅助函数，因为在交叉和突变中可能会产生不符合负载约束的个体，需要对不合要求的个体进行惩罚'''
         dataDict = self.dataDict
@@ -83,6 +94,9 @@ class DeapVrp:
             routeLoad = np.sum([dataDict['Demand'][i] for i in eachRoute])
             penalty += max(0, routeLoad - dataDict['MaxLoad'])
         return penalty
+
+    # ------------------此处待完善｜-----------------------
+
 
     def calRouteLen(self,routes):
         '''辅助函数，返回给定路径的总长度'''
@@ -106,10 +120,14 @@ class DeapVrp:
         # 在ind1中随机选择一段子路径subroute1，将其前置
         routes1 = self.decodeInd(ind1) # 将ind1解码成路径
         numSubroute1 = len(routes1) # 子路径数量
+        if numSubroute1<3:
+            return []
         subroute1 = routes1[np.random.randint(0, numSubroute1)]
         # 将subroute1中没有出现的顾客按照其在ind2中的顺序排列成一个序列
         unvisited = set(ind1) - set(subroute1) # 在subroute1中没有出现访问的顾客
         unvisitedPerm = [digit for digit in ind2 if digit in unvisited] # 按照在ind2中的顺序排列
+        if len(unvisitedPerm) == 0:
+            return []
         # 多次重复随机打断，选取适应度最好的个体
         bestRoute = None # 容器
         bestFit = np.inf
@@ -118,6 +136,8 @@ class DeapVrp:
             breakPos = [0]+random.sample(range(1,len(unvisitedPerm)),numSubroute1-2) # 产生numSubroute1-2个断点
             breakPos.sort()
             breakSubroute = []
+            # if len(breakPos)<=2:
+            #     continue
             for i,j in zip(breakPos[0::], breakPos[1::]):
                 breakSubroute.append([0]+unvisitedPerm[i:j]+[0])
             breakSubroute.append([0]+unvisitedPerm[j:]+[0])
@@ -197,7 +217,7 @@ class DeapVrp:
         hallOfFame = tools.HallOfFame(maxsize=1)
 
         ## 遗传算法参数
-        toolbox.ngen = 200
+        toolbox.ngen = 50
 
         toolbox.cxpb = 0.8
         toolbox.mutpb = 0.1
@@ -224,4 +244,7 @@ class DeapVrp:
 
 
 if __name__ == '__main__':
-    pass
+    #-----------------------------------
+    ## 注册遗传算法操作
+    deap = DeapVrp()
+    deap.predict()
