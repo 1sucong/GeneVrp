@@ -39,7 +39,7 @@ print(demand_data.index)
 for i in range(len(demand_data)):
     if demand_data.loc[i].at['dim_city_name'] in city_dict and demand_data.loc[i].at['order_value']>0:
         init_json['NodeCoor'].append(city_dict[demand_data.loc[i].at['dim_city_name']])
-        init_json['Demand'].append(random.randint(400, 1000))
+        init_json['Demand'].append(random.randint(10, 30))
 print(len(init_json['NodeCoor']))
 
 # 画图
@@ -53,7 +53,7 @@ data1 = np.array(init_json['center'])
 x1, y1 = data1.T
 plt.scatter(x1,y1,color = 'blue')
 plt.show()
-init_json['MaxLoad'] = 4000
+init_json['MaxLoad'] = 80
 init_json['ServiceTime'] = 1
 with open('./sucong/data/raw_data_test.json', 'w') as fp:
     json.dump(init_json, fp)

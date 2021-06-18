@@ -124,5 +124,5 @@ finaljson['中心3号仓库'] = dictres3
 print(finaljson)
 
 
-with open('./sucong/result/361132_1.json', 'w',encoding='utf8') as fp2:
+with open('./sucong/result/ddys_4.json', 'w',encoding='utf8') as fp2:
     dataDict = json.dump(finaljson,fp2,ensure_ascii=False)
